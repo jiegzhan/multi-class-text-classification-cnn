@@ -1,2 +1,4 @@
 # multi-class-text-classification-cnn-tensorflow
-Multi-class text classification with CNN on tensorflow
+Classify kaggle consumer finance complaints with CNN on tensorflow
+
+## Data: https://www.kaggle.com/cfpb/us-consumer-finance-complaints

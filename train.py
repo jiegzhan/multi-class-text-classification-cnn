@@ -16,14 +16,14 @@ from tensorflow.contrib import learn
 # ==================================================
 
 # Model Hyperparameters
-tf.flags.DEFINE_integer("embedding_dim", 128, "Dimensionality of character embedding (default: 128)")
+tf.flags.DEFINE_integer("embedding_dim", 64, "Dimensionality of character embedding (default: 128)")
 tf.flags.DEFINE_string("filter_sizes", "3,4,5", "Comma-separated filter sizes (default: '3,4,5')")
 tf.flags.DEFINE_integer("num_filters", 64, "Number of filters per filter size (default: 128)")
 tf.flags.DEFINE_float("dropout_keep_prob", 0.5, "Dropout keep probability (default: 0.5)")
 tf.flags.DEFINE_float("l2_reg_lambda", 0.0, "L2 regularizaion lambda (default: 0.0)")
 
 # Training parameters
-tf.flags.DEFINE_integer("batch_size", 64, "Batch Size (default: 64)")
+tf.flags.DEFINE_integer("batch_size", 16, "Batch Size (default: 64)")
 tf.flags.DEFINE_integer("num_epochs", 1, "Number of training epochs (default: 200)")
 tf.flags.DEFINE_integer("evaluate_every", 100, "Evaluate model on dev set after this many steps (default: 100)")
 tf.flags.DEFINE_integer("checkpoint_every", 100, "Save model after this many steps (default: 100)")
@@ -52,8 +52,12 @@ x_, x_test = x[:-test_size], x[-test_size:]
 y_, y_test = y[:-test_size], y[-test_size:]
 
 df_train, df_test = df[:-test_size], df[-test_size:]
-df_train.to_csv('./train.csv', index=False)
-df_test.to_csv('./test.csv', index=False)
+print(df_train.shape)
+print(df_test.shape)
+with open('./train.json', 'w') as outfile:
+	json.dump(df_train.to_dict(orient='records'), outfile, indent=4)
+with open('./test.json', 'w') as outfile:
+	json.dump(df_test.to_dict(orient='records'), outfile, indent=4)
 
 shuffle_indices = np.random.permutation(np.arange(len(y_)))
 x_shuffled = x_[shuffle_indices]
@@ -65,10 +69,6 @@ y_train, y_dev = y_shuffled[:-dev_size], y_shuffled[-dev_size:]
 
 print('x_train: {}, x_dev: {}, x_test: {}'.format(len(x_train), len(x_dev), len(x_test)))
 print('y_train: {}, y_dev: {}, y_test: {}'.format(len(y_train), len(y_dev), len(y_test)))
-sys.exit()
-
-# Training
-# ==================================================
 
 with tf.Graph().as_default():
     session_conf = tf.ConfigProto(

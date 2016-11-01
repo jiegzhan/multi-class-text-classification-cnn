@@ -1,4 +1,7 @@
 import re
+import csv
+import sys
+import json
 import numpy as np
 import pandas as pd
 import itertools
@@ -25,7 +28,7 @@ def clean_str(string):
 	return string.strip().lower()
 
 def load_data_and_labels(filename):
-	df = pd.read_csv(filename)
+	df = pd.read_csv(filename, dtype={'consumer_complaint_narrative': object})
 	selected = ['product', 'consumer_complaint_narrative']
 	non_selected = list(set(df.columns) - set(selected))
 	print(df.shape)
@@ -33,7 +36,6 @@ def load_data_and_labels(filename):
 	df = df.drop(non_selected, axis=1)
 	df = df.dropna(axis=0, how='any', subset=selected)
 	df = df.reindex(np.random.permutation(df.index))
-	print(df.shape)
 
 	labels = sorted(list(set(df[selected[0]].tolist())))
 	print(labels)

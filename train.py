@@ -66,7 +66,7 @@ with tf.Graph().as_default():
 		train_op = optimizer.apply_gradients(grads_and_vars, global_step=global_step)
 
 		timestamp = str(int(time.time()))
-		out_dir = os.path.abspath(os.path.join(os.path.curdir, "runs", timestamp))
+		out_dir = os.path.abspath(os.path.join(os.path.curdir, "trained_model_" + timestamp))
 		print("Writing to {}\n".format(out_dir))
 
 		checkpoint_dir = os.path.abspath(os.path.join(out_dir, "checkpoints"))
@@ -75,11 +75,9 @@ with tf.Graph().as_default():
 			os.makedirs(checkpoint_dir)
 		saver = tf.train.Saver(tf.all_variables())
 
-		# Write vocabulary
 		print('Saving vocab_processor')
 		vocab_processor.save(os.path.join(out_dir, "vocab"))
 
-		# Initialize all variables
 		sess.run(tf.initialize_all_variables())
 
 		def train_step(x_batch, y_batch):

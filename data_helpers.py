@@ -28,8 +28,9 @@ def clean_str(string):
 	return string.strip().lower()
 
 def load_data_and_labels(filename):
-	df = pd.read_csv(filename, dtype={'consumer_complaint_narrative': object})
+	df = pd.read_csv(filename, compression='zip', dtype={'consumer_complaint_narrative': object})
 	selected = ['product', 'consumer_complaint_narrative']
+
 	non_selected = list(set(df.columns) - set(selected))
 	print(df.shape)
 
@@ -84,5 +85,5 @@ def batch_iter(data, batch_size, num_epochs, shuffle=True):
 			yield shuffled_data[start_index:end_index]
 
 if __name__ == '__main__':
-	input_file = './data/consumer_complaints.csv'
+	input_file = './data/consumer_complaints.csv.zip'
 	load_data_and_labels(input_file)

@@ -3,7 +3,6 @@ import sys
 import json
 import time
 import logging
-import datetime
 import data_helpers
 import numpy as np
 import pandas as pd
@@ -13,31 +12,23 @@ from tensorflow.contrib import learn
 
 logging.getLogger().setLevel(logging.INFO)
 
-def train_cnn():
-	params = json.loads(open('./parameters.json').read())
+def train_cnn(train_file, parameter_file):
+	"""Step 0: load training parameters, sentences, labels"""
+	params = json.loads(open(parameter_file).read())
+	x_raw, y, df, labels = data_helpers.load_data_and_labels(train_file)
 
-	x_text, y, df, labels = data_helpers.load_data_and_labels('./data/consumer_complaints.csv.zip')
-
-	max_document_length = max([len(x.split(' ')) for x in x_text])
-	print('max_documnet_length: {}'.format(max_document_length))
-
+	"""Step 1: pad each sentence to the same length and map each word to an id"""
+	max_document_length = max([len(x.split(' ')) for x in x_raw])
+	logging.info('max_documnet_length: {}'.format(max_document_length))
 	vocab_processor = learn.preprocessing.VocabularyProcessor(max_document_length)
-	x = np.array(list(vocab_processor.fit_transform(x_text)))
+	x = np.array(list(vocab_processor.fit_transform(x_raw)))
 
+	"""Step 2: split the original dataset into train and test sets"""
 	test_size = int(0.1 * len(x))
 	x_, x_test = x[:-test_size], x[-test_size:]
 	y_, y_test = y[:-test_size], y[-test_size:]
 
-	df_train, df_test = df[:-test_size], df[-test_size:]
-	print(df_train.shape)
-	print(df_test.shape)
-	with open('./data_train.json', 'w') as outfile:
-		json.dump(df_train.to_dict(orient='records'), outfile, indent=4)
-	with open('./data_test.json', 'w') as outfile:
-		json.dump(df_test.to_dict(orient='records'), outfile, indent=4)
-	with open('./labels.json', 'w') as outfile:
-		json.dump(labels, outfile, indent=4)
-
+	"""Step 3: shuffle the train set and split the train set into train and dev sets"""
 	shuffle_indices = np.random.permutation(np.arange(len(y_)))
 	x_shuffled = x_[shuffle_indices]
 	y_shuffled = y_[shuffle_indices]
@@ -46,10 +37,16 @@ def train_cnn():
 	x_train, x_dev = x_shuffled[:-dev_size], x_shuffled[-dev_size:]
 	y_train, y_dev = y_shuffled[:-dev_size], y_shuffled[-dev_size:]
 
-	print('x_train: {}, x_dev: {}, x_test: {}'.format(len(x_train), len(x_dev), len(x_test)))
-	print('y_train: {}, y_dev: {}, y_test: {}'.format(len(y_train), len(y_dev), len(y_test)))
+	"""Step 4: save the labels into labels.json for predict.py"""
+	with open('./labels.json', 'w') as outfile:
+		json.dump(labels, outfile, indent=4)
 
-	with tf.Graph().as_default():
+	logging.info('x_train: {}, x_dev: {}, x_test: {}'.format(len(x_train), len(x_dev), len(x_test)))
+	logging.info('y_train: {}, y_dev: {}, y_test: {}'.format(len(y_train), len(y_dev), len(y_test)))
+
+	"""Step 5: build a graph and cnn object"""
+	graph = tf.Graph()
+	with graph.as_default():
 		session_conf = tf.ConfigProto(allow_soft_placement=True, log_device_placement=False)
 		sess = tf.Session(config=session_conf)
 		with sess.as_default():
@@ -76,30 +73,35 @@ def train_cnn():
 				os.makedirs(checkpoint_dir)
 			saver = tf.train.Saver(tf.all_variables())
 
+			# Save vocab.pickle for predict.py in future
 			vocab_processor.save(os.path.join(out_dir, "vocab"))
 
 			sess.run(tf.initialize_all_variables())
 
 			def train_step(x_batch, y_batch):
-				feed_dict = {cnn.input_x: x_batch, cnn.input_y: y_batch, cnn.dropout_keep_prob: params['dropout_keep_prob']}
-				_, step, loss, accuracy = sess.run([train_op, global_step, cnn.loss, cnn.accuracy], feed_dict)
+				feed_dict = {
+					cnn.input_x: x_batch,
+					cnn.input_y: y_batch,
+					cnn.dropout_keep_prob: params['dropout_keep_prob']}
+				_, step, loss, acc = sess.run([train_op, global_step, cnn.loss, cnn.accuracy], feed_dict)
 
 			def dev_step(x_batch, y_batch):
 				feed_dict = {cnn.input_x: x_batch, cnn.input_y: y_batch, cnn.dropout_keep_prob: 1.0}
-				step, loss, accuracy, num_correct = sess.run([global_step, cnn.loss, cnn.accuracy, cnn.num_correct], feed_dict)
-				return loss, accuracy, num_correct
+				step, loss, acc, num_correct = sess.run([global_step, cnn.loss, cnn.accuracy, cnn.num_correct], feed_dict)
+				return loss, acc, num_correct
 
 			# Training starts here
 			batches = data_helpers.batch_iter(list(zip(x_train, y_train)), params['batch_size'], params['num_epochs'])
 			best_accuracy, best_at_step = 0, 0
 
+			"""Step 6: train the cnn model with x_train and y_train"""
 			for batch in batches:
 				x_batch, y_batch = zip(*batch)
 				train_step(x_batch, y_batch)
 				current_step = tf.train.global_step(sess, global_step)
 
+				"""Step 6.1: evaluate the model with x_dev and y_dev"""
 				if current_step % params['evaluate_every'] == 0:
-					print("\nEvaluation:")
 					dev_batches = data_helpers.batch_iter(list(zip(x_dev, y_dev)), params['batch_size'], 1)
 					total_dev_correct = 0
 					for dev_batch in dev_batches:
@@ -107,15 +109,17 @@ def train_cnn():
 						loss, accuracy, num_dev_correct = dev_step(x_dev_batch, y_dev_batch)
 						total_dev_correct += num_dev_correct
 
-					accuracy = float(total_dev_correct) / dev_size
-					print('total_dev_correct: {}'.format(total_dev_correct))
-					print('accuracy on dev: {}'.format(accuracy))
+					dev_accuracy = float(total_dev_correct) / dev_size
+					logging.critical('Accuracy on dev set: {}'.format(dev_accuracy))
 
-					if accuracy >= best_accuracy:
-						best_accuracy, best_at_step = accuracy, current_step
+					"""Step 6.2: save the model if it is the best based on accuracy of the dev set"""
+					if dev_accuracy >= best_accuracy:
+						best_accuracy, best_at_step = dev_accuracy, current_step
 						path = saver.save(sess, checkpoint_prefix, global_step=current_step)
-						logging.critical('Save the best model checkpoint to {} at evaluate step {}'.format(path, best_at_step))
-						logging.critical('Best accuracy on dev set: {}, at step {}'.format(best_accuracy, best_at_step))
+						logging.critical('Saved model {} at evaluate step {}'.format(path, best_at_step))
+						logging.critical('Best accuracy on dev set: {}, at evaluate step {}'.format(best_accuracy, best_at_step))
 
 if __name__ == '__main__':
-	train_cnn()
+	train_file = './data/consumer_complaints.csv.zip'
+	parameter_file = './parameters.json'
+	train_cnn(train_file, parameter_file)

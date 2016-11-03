@@ -11,16 +11,16 @@ from tensorflow.contrib import learn
 logging.getLogger().setLevel(logging.INFO)
 
 def predict_unseen_data():
-	"""Step 1: load trained model and parameters"""
+	"""Step 0: load trained model and parameters"""
 	params = json.loads(open('./parameters.json').read())
 	checkpoint_dir = sys.argv[1]
 	checkpoint_file = tf.train.latest_checkpoint(checkpoint_dir + 'checkpoints')
 
-	"""Step 2: load data for prediction"""
+	"""Step 1: load data for prediction"""
 	test_file = sys.argv[2]
 	test_examples = json.loads(open(test_file).read())
 
-	# labels.json will be saved during training, and it has to be loaded during prediction
+	# labels.json was saved during training, and it has to be loaded during prediction
 	labels = json.loads(open('./labels.json').read())
 	one_hot = np.zeros((len(labels), len(labels)), int)
 	np.fill_diagonal(one_hot, 1)
@@ -40,7 +40,7 @@ def predict_unseen_data():
 	vocab_processor = learn.preprocessing.VocabularyProcessor.restore(vocab_path)
 	x_test = np.array(list(vocab_processor.transform(x_raw)))
 
-	"""Step 3: compute the predictions"""
+	"""Step 2: compute the predictions"""
 	graph = tf.Graph()
 	with graph.as_default():
 		session_conf = tf.ConfigProto(allow_soft_placement=True, log_device_placement=False)
@@ -62,8 +62,8 @@ def predict_unseen_data():
 
 	if y_test is not None:
 		y_test = np.argmax(y_test, axis=1)
-		correct_predictions = float(sum(all_predictions == y_test))
-		logging.info('The accuracy is: {}'.format(correct_predictions / float(len(y_test))))
+		correct_predictions = sum(all_predictions == y_test)
+		logging.critical('The accuracy is: {}'.format(correct_predictions / float(len(y_test))))
 
 if __name__ == '__main__':
 	predict_unseen_data()

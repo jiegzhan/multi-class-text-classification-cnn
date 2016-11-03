@@ -17,8 +17,10 @@ def predict_unseen_data():
 	checkpoint_file = tf.train.latest_checkpoint(checkpoint_dir + 'checkpoints')
 
 	"""Step 2: load data for prediction"""
-	test_examples = json.loads(open('./data/small_samples.json').read())
+	test_file = sys.argv[2]
+	test_examples = json.loads(open(test_file).read())
 
+	# labels.json will be saved during training, and it has to be loaded during prediction
 	labels = json.loads(open('./labels.json').read())
 	one_hot = np.zeros((len(labels), len(labels)), int)
 	np.fill_diagonal(one_hot, 1)

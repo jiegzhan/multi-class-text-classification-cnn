@@ -2,7 +2,7 @@ import os
 import sys
 import json
 import logging
-import data_helpers
+import data_helper
 import numpy as np
 import pandas as pd
 import tensorflow as tf
@@ -15,6 +15,7 @@ def predict_unseen_data():
 	params = json.loads(open('./parameters.json').read())
 	checkpoint_dir = sys.argv[1]
 	checkpoint_file = tf.train.latest_checkpoint(checkpoint_dir + 'checkpoints')
+	logging.critical('Loaded the trained model: {}'.format(checkpoint_file))
 
 	"""Step 1: load data for prediction"""
 	test_file = sys.argv[2]
@@ -27,7 +28,7 @@ def predict_unseen_data():
 	label_dict = dict(zip(labels, one_hot))
 
 	x_raw = [example['consumer_complaint_narrative'] for example in test_examples]
-	x_test = [data_helpers.clean_str(x) for x in x_raw]
+	x_test = [data_helper.clean_str(x) for x in x_raw]
 	logging.info('The number of x_test: {}'.format(len(x_test)))
 
 	y_test = None
@@ -36,7 +37,7 @@ def predict_unseen_data():
 		y_test = [label_dict[y] for y in y_raw]
 		logging.info('The number of y_test: {}'.format(len(y_test)))
 
-	vocab_path = os.path.join(checkpoint_dir, "vocab")
+	vocab_path = os.path.join(checkpoint_dir, "vocab.pickle")
 	vocab_processor = learn.preprocessing.VocabularyProcessor.restore(vocab_path)
 	x_test = np.array(list(vocab_processor.transform(x_raw)))
 
@@ -54,7 +55,7 @@ def predict_unseen_data():
 			dropout_keep_prob = graph.get_operation_by_name("dropout_keep_prob").outputs[0]
 			predictions = graph.get_operation_by_name("output/predictions").outputs[0]
 
-			batches = data_helpers.batch_iter(list(x_test), params['batch_size'], 1, shuffle=False)
+			batches = data_helper.batch_iter(list(x_test), params['batch_size'], 1, shuffle=False)
 			all_predictions = []
 			for x_test_batch in batches:
 				batch_predictions = sess.run(predictions, {input_x: x_test_batch, dropout_keep_prob: 1.0})

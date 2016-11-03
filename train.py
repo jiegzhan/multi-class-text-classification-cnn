@@ -3,7 +3,7 @@ import sys
 import json
 import time
 import logging
-import data_helpers
+import data_helper
 import numpy as np
 import pandas as pd
 import tensorflow as tf
@@ -15,11 +15,11 @@ logging.getLogger().setLevel(logging.INFO)
 def train_cnn(train_file, parameter_file):
 	"""Step 0: load training parameters, sentences, labels"""
 	params = json.loads(open(parameter_file).read())
-	x_raw, y, df, labels = data_helpers.load_data_and_labels(train_file)
+	x_raw, y, df, labels = data_helper.load_data_and_labels(train_file)
 
 	"""Step 1: pad each sentence to the same length and map each word to an id"""
 	max_document_length = max([len(x.split(' ')) for x in x_raw])
-	logging.info('max_documnet_length: {}'.format(max_document_length))
+	logging.info('The maximum length of all sentences: {}'.format(max_document_length))
 	vocab_processor = learn.preprocessing.VocabularyProcessor(max_document_length)
 	x = np.array(list(vocab_processor.fit_transform(x_raw)))
 
@@ -73,11 +73,12 @@ def train_cnn(train_file, parameter_file):
 				os.makedirs(checkpoint_dir)
 			saver = tf.train.Saver(tf.all_variables())
 
-			# Save vocab.pickle for predict.py in future
-			vocab_processor.save(os.path.join(out_dir, "vocab"))
+			# Save vocab.pickle for predict.py
+			vocab_processor.save(os.path.join(out_dir, "vocab.pickle"))
 
 			sess.run(tf.initialize_all_variables())
 
+			# One training step: train the model with one batch
 			def train_step(x_batch, y_batch):
 				feed_dict = {
 					cnn.input_x: x_batch,
@@ -85,24 +86,25 @@ def train_cnn(train_file, parameter_file):
 					cnn.dropout_keep_prob: params['dropout_keep_prob']}
 				_, step, loss, acc = sess.run([train_op, global_step, cnn.loss, cnn.accuracy], feed_dict)
 
+			# One evaluation step: evaluate the model with one batch
 			def dev_step(x_batch, y_batch):
 				feed_dict = {cnn.input_x: x_batch, cnn.input_y: y_batch, cnn.dropout_keep_prob: 1.0}
 				step, loss, acc, num_correct = sess.run([global_step, cnn.loss, cnn.accuracy, cnn.num_correct], feed_dict)
 				return loss, acc, num_correct
 
 			# Training starts here
-			batches = data_helpers.batch_iter(list(zip(x_train, y_train)), params['batch_size'], params['num_epochs'])
+			train_batches = data_helper.batch_iter(list(zip(x_train, y_train)), params['batch_size'], params['num_epochs'])
 			best_accuracy, best_at_step = 0, 0
 
-			"""Step 6: train the cnn model with x_train and y_train"""
-			for batch in batches:
-				x_batch, y_batch = zip(*batch)
-				train_step(x_batch, y_batch)
+			"""Step 6: train the cnn model with x_train and y_train (batch by batch)"""
+			for train_batch in train_batches:
+				x_train_batch, y_train_batch = zip(*train_batch)
+				train_step(x_train_batch, y_train_batch)
 				current_step = tf.train.global_step(sess, global_step)
 
-				"""Step 6.1: evaluate the model with x_dev and y_dev"""
+				"""Step 6.1: evaluate the model with x_dev and y_dev (batch by batch)"""
 				if current_step % params['evaluate_every'] == 0:
-					dev_batches = data_helpers.batch_iter(list(zip(x_dev, y_dev)), params['batch_size'], 1)
+					dev_batches = data_helper.batch_iter(list(zip(x_dev, y_dev)), params['batch_size'], 1)
 					total_dev_correct = 0
 					for dev_batch in dev_batches:
 						x_dev_batch, y_dev_batch = zip(*dev_batch)
@@ -116,8 +118,21 @@ def train_cnn(train_file, parameter_file):
 					if dev_accuracy >= best_accuracy:
 						best_accuracy, best_at_step = dev_accuracy, current_step
 						path = saver.save(sess, checkpoint_prefix, global_step=current_step)
-						logging.critical('Saved model {} at evaluate step {}'.format(path, best_at_step))
-						logging.critical('Best accuracy on dev set: {}, at evaluate step {}'.format(best_accuracy, best_at_step))
+						logging.critical('Saved model {} at step {}'.format(path, best_at_step))
+						logging.critical('Best accuracy on dev set: {}, at step {}'.format(best_accuracy, best_at_step))
+
+			"""Step 7: predict x_test (batch by batch)"""
+			test_batches = data_helper.batch_iter(list(zip(x_test, y_test)), params['batch_size'], 1)
+			total_test_correct = 0
+			for test_batch in test_batches:
+				x_test_batch, y_test_batch = zip(*test_batch)
+				loss, accuracy, num_test_correct = dev_step(x_test_batch, y_test_batch)
+				total_test_correct += num_test_correct
+
+			test_accuracy = float(total_test_correct) / test_size
+			logging.critical('Accuracy on test set is {} based on the best model {}'.format(test_accuracy, path))
+
+			logging.critical('The training is complete')
 
 if __name__ == '__main__':
 	train_file = './data/consumer_complaints.csv.zip'

@@ -4,8 +4,11 @@ import json
 import logging
 import data_helpers
 import numpy as np
+import pandas as pd
 import tensorflow as tf
 from tensorflow.contrib import learn
+
+logging.getLogger().setLevel(logging.INFO)
 
 def predict_unseen_data():
 	"""Step 1: load trained model and parameters"""
@@ -14,13 +17,26 @@ def predict_unseen_data():
 	checkpoint_file = tf.train.latest_checkpoint(checkpoint_dir + 'checkpoints')
 
 	"""Step 2: load data for prediction"""
-	x_raw = ["a masterpiece four years in the making", "everything is off."]
-	y_test = [1, 0]
+	test_examples = json.loads(open('./data/small_samples.json').read())
+
+	labels = json.loads(open('./labels.json').read())
+	one_hot = np.zeros((len(labels), len(labels)), int)
+	np.fill_diagonal(one_hot, 1)
+	label_dict = dict(zip(labels, one_hot))
+
+	x_raw = [example['consumer_complaint_narrative'] for example in test_examples]
+	x_test = [data_helpers.clean_str(x) for x in x_raw]
+	logging.info('The number of x_test: {}'.format(len(x_test)))
+
+	y_test = None
+	if 'product' in test_examples[0]:
+		y_raw = [example['product'] for example in test_examples]
+		y_test = [label_dict[y] for y in y_raw]
+		logging.info('The number of y_test: {}'.format(len(y_test)))
 
 	vocab_path = os.path.join(checkpoint_dir, "vocab")
 	vocab_processor = learn.preprocessing.VocabularyProcessor.restore(vocab_path)
 	x_test = np.array(list(vocab_processor.transform(x_raw)))
-	print(x_test)
 
 	"""Step 3: compute the predictions"""
 	graph = tf.Graph()
@@ -43,9 +59,9 @@ def predict_unseen_data():
 				all_predictions = np.concatenate([all_predictions, batch_predictions])
 
 	if y_test is not None:
+		y_test = np.argmax(y_test, axis=1)
 		correct_predictions = float(sum(all_predictions == y_test))
-		print("Total number of test examples: {}".format(len(y_test)))
-		print("Accuracy: {:g}".format(correct_predictions / float(len(y_test))))
+		logging.info('The accuracy is: {}'.format(correct_predictions / float(len(y_test))))
 
 if __name__ == '__main__':
 	predict_unseen_data()

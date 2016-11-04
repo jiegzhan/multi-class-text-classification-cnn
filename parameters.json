@@ -1,7 +1,7 @@
 {
     "num_epochs": 1,
     "batch_size": 64,
-    "num_filters": 64,
+    "num_filters": 128,
     "filter_sizes": "3,4,5",
     "embedding_dim": 128,
     "l2_reg_lambda": 0.0,

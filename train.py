@@ -14,31 +14,25 @@ logging.getLogger().setLevel(logging.INFO)
 def train_cnn(train_file, parameter_file):
 	"""Step 0: load training parameters, sentences, labels"""
 	params = json.loads(open(parameter_file).read())
-	x_raw, y, df, labels = data_helper.load_data_and_labels(train_file)
+	x_raw, y_raw, df, labels = data_helper.load_data_and_labels(train_file)
 
 	"""Step 1: pad each sentence to the same length and map each word to an id"""
 	max_document_length = max([len(x.split(' ')) for x in x_raw])
 	logging.info('The maximum length of all sentences: {}'.format(max_document_length))
 	vocab_processor = learn.preprocessing.VocabularyProcessor(max_document_length)
 	x = np.array(list(vocab_processor.fit_transform(x_raw)))
+	y = np.array(y_raw)
 
 	"""Step 2: split the original dataset into train and test sets"""
-	# test_size = int(0.1 * len(x))
-	# x_, x_test = x[:-test_size], x[-test_size:]
-	# y_, y_test = y[:-test_size], y[-test_size:]
 	x_, x_test, y_, y_test = train_test_split(x, y, test_size=0.1, random_state=42)
 
 	"""Step 3: shuffle the train set and split the train set into train and dev sets"""
 	shuffle_indices = np.random.permutation(np.arange(len(y_)))
 	x_shuffled = x_[shuffle_indices]
 	y_shuffled = y_[shuffle_indices]
-
-	# dev_size = int(0.1 * len(x_))
-	# x_train, x_dev = x_shuffled[:-dev_size], x_shuffled[-dev_size:]
-	# y_train, y_dev = y_shuffled[:-dev_size], y_shuffled[-dev_size:]
 	x_train, x_dev, y_train, y_dev = train_test_split(x_shuffled, y_shuffled, test_size=0.1)
 
-	"""Step 4: save the labels into labels.json for predict.py"""
+	"""Step 4: save the labels into labels.json since predict.py needs it"""
 	with open('./labels.json', 'w') as outfile:
 		json.dump(labels, outfile, indent=4)
 
@@ -74,11 +68,6 @@ def train_cnn(train_file, parameter_file):
 				os.makedirs(checkpoint_dir)
 			saver = tf.train.Saver(tf.all_variables())
 
-			# Save vocab.pickle for predict.py
-			vocab_processor.save(os.path.join(out_dir, "vocab.pickle"))
-
-			sess.run(tf.initialize_all_variables())
-
 			# One training step: train the model with one batch
 			def train_step(x_batch, y_batch):
 				feed_dict = {
@@ -92,6 +81,10 @@ def train_cnn(train_file, parameter_file):
 				feed_dict = {cnn.input_x: x_batch, cnn.input_y: y_batch, cnn.dropout_keep_prob: 1.0}
 				step, loss, acc, num_correct = sess.run([global_step, cnn.loss, cnn.accuracy, cnn.num_correct], feed_dict)
 				return num_correct
+
+			# Save the word_to_id map since predict.py needs it
+			vocab_processor.save(os.path.join(out_dir, "vocab.pickle"))
+			sess.run(tf.initialize_all_variables())
 
 			# Training starts here
 			train_batches = data_helper.batch_iter(list(zip(x_train, y_train)), params['batch_size'], params['num_epochs'])

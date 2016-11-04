@@ -1,14 +1,13 @@
 import os
-import sys
 import json
 import time
 import logging
 import data_helper
 import numpy as np
-import pandas as pd
 import tensorflow as tf
 from text_cnn import TextCNN
 from tensorflow.contrib import learn
+from sklearn.model_selection import train_test_split
 
 logging.getLogger().setLevel(logging.INFO)
 
@@ -24,18 +23,20 @@ def train_cnn(train_file, parameter_file):
 	x = np.array(list(vocab_processor.fit_transform(x_raw)))
 
 	"""Step 2: split the original dataset into train and test sets"""
-	test_size = int(0.1 * len(x))
-	x_, x_test = x[:-test_size], x[-test_size:]
-	y_, y_test = y[:-test_size], y[-test_size:]
+	# test_size = int(0.1 * len(x))
+	# x_, x_test = x[:-test_size], x[-test_size:]
+	# y_, y_test = y[:-test_size], y[-test_size:]
+	x_, x_test, y_, y_test = train_test_split(x, y, test_size=0.1, random_state=42)
 
 	"""Step 3: shuffle the train set and split the train set into train and dev sets"""
 	shuffle_indices = np.random.permutation(np.arange(len(y_)))
 	x_shuffled = x_[shuffle_indices]
 	y_shuffled = y_[shuffle_indices]
 
-	dev_size = int(0.1 * len(x_))
-	x_train, x_dev = x_shuffled[:-dev_size], x_shuffled[-dev_size:]
-	y_train, y_dev = y_shuffled[:-dev_size], y_shuffled[-dev_size:]
+	# dev_size = int(0.1 * len(x_))
+	# x_train, x_dev = x_shuffled[:-dev_size], x_shuffled[-dev_size:]
+	# y_train, y_dev = y_shuffled[:-dev_size], y_shuffled[-dev_size:]
+	x_train, x_dev, y_train, y_dev = train_test_split(x_shuffled, y_shuffled, test_size=0.1)
 
 	"""Step 4: save the labels into labels.json for predict.py"""
 	with open('./labels.json', 'w') as outfile:
@@ -90,7 +91,7 @@ def train_cnn(train_file, parameter_file):
 			def dev_step(x_batch, y_batch):
 				feed_dict = {cnn.input_x: x_batch, cnn.input_y: y_batch, cnn.dropout_keep_prob: 1.0}
 				step, loss, acc, num_correct = sess.run([global_step, cnn.loss, cnn.accuracy, cnn.num_correct], feed_dict)
-				return loss, acc, num_correct
+				return num_correct
 
 			# Training starts here
 			train_batches = data_helper.batch_iter(list(zip(x_train, y_train)), params['batch_size'], params['num_epochs'])
@@ -108,10 +109,10 @@ def train_cnn(train_file, parameter_file):
 					total_dev_correct = 0
 					for dev_batch in dev_batches:
 						x_dev_batch, y_dev_batch = zip(*dev_batch)
-						loss, accuracy, num_dev_correct = dev_step(x_dev_batch, y_dev_batch)
+						num_dev_correct = dev_step(x_dev_batch, y_dev_batch)
 						total_dev_correct += num_dev_correct
 
-					dev_accuracy = float(total_dev_correct) / dev_size
+					dev_accuracy = float(total_dev_correct) / len(y_dev)
 					logging.critical('Accuracy on dev set: {}'.format(dev_accuracy))
 
 					"""Step 6.2: save the model if it is the best based on accuracy of the dev set"""
@@ -119,19 +120,18 @@ def train_cnn(train_file, parameter_file):
 						best_accuracy, best_at_step = dev_accuracy, current_step
 						path = saver.save(sess, checkpoint_prefix, global_step=current_step)
 						logging.critical('Saved model {} at step {}'.format(path, best_at_step))
-						logging.critical('Best accuracy on dev set: {}, at step {}'.format(best_accuracy, best_at_step))
+						logging.critical('Best accuracy {} at step {}'.format(best_accuracy, best_at_step))
 
 			"""Step 7: predict x_test (batch by batch)"""
 			test_batches = data_helper.batch_iter(list(zip(x_test, y_test)), params['batch_size'], 1)
 			total_test_correct = 0
 			for test_batch in test_batches:
 				x_test_batch, y_test_batch = zip(*test_batch)
-				loss, accuracy, num_test_correct = dev_step(x_test_batch, y_test_batch)
+				num_test_correct = dev_step(x_test_batch, y_test_batch)
 				total_test_correct += num_test_correct
 
-			test_accuracy = float(total_test_correct) / test_size
+			test_accuracy = float(total_test_correct) / len(y_test)
 			logging.critical('Accuracy on test set is {} based on the best model {}'.format(test_accuracy, path))
-
 			logging.critical('The training is complete')
 
 if __name__ == '__main__':

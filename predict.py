@@ -14,6 +14,8 @@ def predict_unseen_data():
 	"""Step 0: load trained model and parameters"""
 	params = json.loads(open('./parameters.json').read())
 	checkpoint_dir = sys.argv[1]
+	if not checkpoint_dir.endswith('/'):
+		checkpoint_dir += '/'
 	checkpoint_file = tf.train.latest_checkpoint(checkpoint_dir + 'checkpoints')
 	logging.critical('Loaded the trained model: {}'.format(checkpoint_file))
 

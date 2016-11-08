@@ -18,7 +18,8 @@
 
 ### Train:
 
- - Command: ```python3 train.py```
+ - Command: ```python3 train.py training_data.file training_parameters.file```
+ - Example: ```python3 train.py ./data/consumer_complaints.csv.zip ./parameters.json```
 
 ### Predict:
 

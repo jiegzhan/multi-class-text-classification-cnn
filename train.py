@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import time
 import logging
@@ -11,10 +12,13 @@ from sklearn.model_selection import train_test_split
 
 logging.getLogger().setLevel(logging.INFO)
 
-def train_cnn(train_file, parameter_file):
-	"""Step 0: load training parameters, sentences, labels"""
-	params = json.loads(open(parameter_file).read())
+def train_cnn():
+	"""Step 0: load sentences, labels, and training parameters"""
+	train_file = sys.argv[1]
 	x_raw, y_raw, df, labels = data_helper.load_data_and_labels(train_file)
+
+	parameter_file = sys.argv[2]
+	params = json.loads(open(parameter_file).read())
 
 	"""Step 1: pad each sentence to the same length and map each word to an id"""
 	max_document_length = max([len(x.split(' ')) for x in x_raw])
@@ -128,6 +132,5 @@ def train_cnn(train_file, parameter_file):
 			logging.critical('The training is complete')
 
 if __name__ == '__main__':
-	train_file = './data/consumer_complaints.csv.zip'
-	parameter_file = './parameters.json'
-	train_cnn(train_file, parameter_file)
+	# python3 train.py ./data/consumer_complaints.csv.zip ./parameters.json
+	train_cnn()

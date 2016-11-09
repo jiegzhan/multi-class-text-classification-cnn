@@ -23,8 +23,8 @@
 
 ### Predict:
 
- - Command: ```python3 predict.py trained_model_directory test_file```
- - Example: ```python3 predict.py ./trained_model_11123 ./data/small_samples.json```
+ - Command: ```python3 predict.py ./trained_model_directory/ test_samples.file```
+ - Example: ```python3 predict.py ./trained_model_1478649295/ ./data/small_samples.json```
 
 ### Reference:
  - [Implement a cnn for text classification in tensorflow](http://www.wildml.com/2015/12/implementing-a-cnn-for-text-classification-in-tensorflow/)

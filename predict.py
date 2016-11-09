@@ -69,4 +69,5 @@ def predict_unseen_data():
 		logging.critical('The accuracy is: {}'.format(correct_predictions / float(len(y_test))))
 
 if __name__ == '__main__':
+	# python3 predict.py ./trained_model_1478649295/ ./data/small_samples.json
 	predict_unseen_data()

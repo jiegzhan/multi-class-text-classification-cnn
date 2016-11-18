@@ -41,7 +41,7 @@ def predict_unseen_data():
 
 	vocab_path = os.path.join(checkpoint_dir, "vocab.pickle")
 	vocab_processor = learn.preprocessing.VocabularyProcessor.restore(vocab_path)
-	x_test = np.array(list(vocab_processor.transform(x_raw)))
+	x_test = np.array(list(vocab_processor.transform(x_test)))
 
 	"""Step 2: compute the predictions"""
 	graph = tf.Graph()

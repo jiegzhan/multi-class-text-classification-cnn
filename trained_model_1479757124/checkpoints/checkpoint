@@ -1,0 +1,6 @@
+model_checkpoint_path: "/home/ubuntu/multi-class-text-classification-cnn/trained_model_1479757124/checkpoints/model-10800"
+all_model_checkpoint_paths: "/home/ubuntu/multi-class-text-classification-cnn/trained_model_1479757124/checkpoints/model-8800"
+all_model_checkpoint_paths: "/home/ubuntu/multi-class-text-classification-cnn/trained_model_1479757124/checkpoints/model-9300"
+all_model_checkpoint_paths: "/home/ubuntu/multi-class-text-classification-cnn/trained_model_1479757124/checkpoints/model-9900"
+all_model_checkpoint_paths: "/home/ubuntu/multi-class-text-classification-cnn/trained_model_1479757124/checkpoints/model-10500"
+all_model_checkpoint_paths: "/home/ubuntu/multi-class-text-classification-cnn/trained_model_1479757124/checkpoints/model-10800"

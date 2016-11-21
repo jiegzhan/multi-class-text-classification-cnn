@@ -5,7 +5,7 @@ import pandas as pd
 from collections import Counter
 
 def clean_str(s):
-	"""Clean each sentence"""
+	"""Clean sentence"""
 	s = re.sub(r"[^A-Za-z0-9(),!?\'\`]", " ", s)
 	s = re.sub(r"\'s", " \'s", s)
 	s = re.sub(r"\'ve", " \'ve", s)

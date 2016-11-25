@@ -18,15 +18,15 @@
 
 ### Train:
 
- - Command: python3 train.py training_data.file training_parameters.file
+ - Command: python3 train.py training_data.file parameters.file
  - Example: ```python3 train.py ./data/consumer_complaints.csv.zip ./parameters.json```
  
  A directory will be created during training, and the best model will be saved in this directory. 
 
 ### Predict:
 
- Provide the model directory (created when running ```train.py```) and test file to ```predict.py```.
- - Command: python3 predict.py ./trained_model_directory/ test_samples.file
+ Provide the model directory (created when running ```train.py```) and new data to ```predict.py```.
+ - Command: python3 predict.py ./trained_model_directory/ new_data.file
  - Example: ```python3 predict.py ./trained_model_1479757124/ ./data/small_samples.json```
 
 ### Reference:

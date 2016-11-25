@@ -2,9 +2,9 @@
 
 ### Highlights:
 
- - This is a **multi-class text classification** problem.
+ - This is a **multi-class text classification (sentence classification)** problem.
  - The purpose of this project is to classify Kaggle Consumer Finance Complaints into **11 classes**. 
- - The model was built with Convolutional Neural Network **(CNN)** and **word embeddings** on Tensorflow.
+ - The model was built with **Convolutional Neural Network (CNN)** and **Word Embeddings** on **Tensorflow**.
 
 ### Data: [Kaggle Consumer Finance Complaints](https://www.kaggle.com/cfpb/us-consumer-finance-complaints)
 
@@ -21,11 +21,11 @@
  - Command: python3 train.py training_data.file training_parameters.file
  - Example: ```python3 train.py ./data/consumer_complaints.csv.zip ./parameters.json```
  
- A directory will be generated during training, and it contains model which will be loaded when running ```predict.py```.
+ A directory will be created during training, and the best model will be saved in this directory. 
 
 ### Predict:
 
- Provide the model directory (generated when running ```train.py```) and test file to ```predict.py```.
+ Provide the model directory (created when running ```train.py```) and test file to ```predict.py```.
  - Command: python3 predict.py ./trained_model_directory/ test_samples.file
  - Example: ```python3 predict.py ./trained_model_1479757124/ ./data/small_samples.json```
 

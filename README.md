@@ -3,7 +3,7 @@
 ### Highlights:
 
  - This is a **multi-class text classification (sentence classification)** problem.
- - The purpose of this project is to classify Kaggle Consumer Finance Complaints into **11 classes**. 
+ - The purpose of this project is to **classify Kaggle Consumer Finance Complaints into 11 classes**. 
  - The model was built with **Convolutional Neural Network (CNN)** and **Word Embeddings** on **Tensorflow**.
 
 ### Data: [Kaggle Consumer Finance Complaints](https://www.kaggle.com/cfpb/us-consumer-finance-complaints)

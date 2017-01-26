@@ -1,6 +1,6 @@
 {
     "num_epochs": 1,
-    "batch_size": 50,
+    "batch_size": 37,
     "num_filters": 32,
     "filter_sizes": "3,4,5",
     "embedding_dim": 50,

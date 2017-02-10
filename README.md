@@ -18,7 +18,7 @@
 
 ### Train:
 
- - Command: python3 train.py training_data.file parameters.file
+ - Command: python3 train.py training_data.file parameters.json
  - Example: ```python3 train.py ./data/consumer_complaints.csv.zip ./parameters.json```
  
  A directory will be created during training, and the best model will be saved in this directory. 

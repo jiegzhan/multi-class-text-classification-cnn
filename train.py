@@ -112,12 +112,12 @@ def train_cnn():
 					dev_accuracy = float(total_dev_correct) / len(y_dev)
 					logging.critical('Accuracy on dev set: {}'.format(dev_accuracy))
 
-					"""Step 6.2: save the model if it is the best based on accuracy of the dev set"""
+					"""Step 6.2: save the model if it is the best based on accuracy on dev set"""
 					if dev_accuracy >= best_accuracy:
 						best_accuracy, best_at_step = dev_accuracy, current_step
 						path = saver.save(sess, checkpoint_prefix, global_step=current_step)
-						logging.critical('Saved model {} at step {}'.format(path, best_at_step))
-						logging.critical('Best accuracy {} at step {}'.format(best_accuracy, best_at_step))
+						logging.critical('Saved model at {} at step {}'.format(path, best_at_step))
+						logging.critical('Best accuracy is {} at step {}'.format(best_accuracy, best_at_step))
 
 			"""Step 7: predict x_test (batch by batch)"""
 			test_batches = data_helper.batch_iter(list(zip(x_test, y_test)), params['batch_size'], 1)

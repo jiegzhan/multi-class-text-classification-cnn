@@ -67,6 +67,7 @@ def predict_unseen_data():
 		y_test = np.argmax(y_test, axis=1)
 		correct_predictions = sum(all_predictions == y_test)
 		logging.critical('The accuracy is: {}'.format(correct_predictions / float(len(y_test))))
+		logging.critical('The prediction is complete')
 
 if __name__ == '__main__':
 	# python3 predict.py ./trained_model_1478649295/ ./data/small_samples.json

@@ -66,6 +66,16 @@ def predict_unseen_data():
 	if y_test is not None:
 		y_test = np.argmax(y_test, axis=1)
 		correct_predictions = sum(all_predictions == y_test)
+
+		# Save the actual labels back to file
+		actual_labels = [labels[int(prediction)] for prediction in all_predictions]
+
+		for idx, example in enumerate(test_examples):
+			example['new_prediction'] = actual_labels[idx]
+		
+		with open('./data/small_samples_prediction.json', 'w') as outfile:
+			json.dump(test_examples, outfile, indent=4)
+
 		logging.critical('The accuracy is: {}'.format(correct_predictions / float(len(y_test))))
 		logging.critical('The prediction is complete')
 

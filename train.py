@@ -70,7 +70,7 @@ def train_cnn():
 			checkpoint_prefix = os.path.join(checkpoint_dir, "model")
 			if not os.path.exists(checkpoint_dir):
 				os.makedirs(checkpoint_dir)
-			saver = tf.train.Saver(tf.all_variables())
+			saver = tf.train.Saver()
 
 			# One training step: train the model with one batch
 			def train_step(x_batch, y_batch):
@@ -88,7 +88,7 @@ def train_cnn():
 
 			# Save the word_to_id map since predict.py needs it
 			vocab_processor.save(os.path.join(out_dir, "vocab.pickle"))
-			sess.run(tf.initialize_all_variables())
+			sess.run(tf.global_variables_initializer())
 
 			# Training starts here
 			train_batches = data_helper.batch_iter(list(zip(x_train, y_train)), params['batch_size'], params['num_epochs'])

@@ -4,7 +4,7 @@
 
  - This is a **multi-class text classification (sentence classification)** problem.
  - The purpose of this project is to **classify Kaggle Consumer Finance Complaints into 11 classes**. 
- - The model was built with **Convolutional Neural Network (CNN)** and **Word Embeddings** on **Tensorflow**.
+ - The model was built with **Convolutional Neural Network (CNN)** and **Word Embeddings** on **TensorFlow 2 / Keras**.
 
 ### Data: [Kaggle Consumer Finance Complaints](https://www.kaggle.com/cfpb/us-consumer-finance-complaints)
 
@@ -16,18 +16,30 @@
 
      - Example: Credit reporting
 
+### Setup:
+
+```bash
+pip install -r requirements.txt
+```
+
 ### Train:
 
- - Command: python3 train.py training_data.file parameters.json
- - Example: ```python3 train.py ./data/consumer_complaints.csv.zip ./parameters.json```
+ - Command: `python train.py <data_file> <params_file>`
+ - Example: `python train.py ./data/consumer_complaints.csv.zip ./parameters.json`
  
- A directory will be created during training, and the trained model will be saved in this directory. 
+ A directory (`trained_model_<timestamp>/`) will be created during training:
+ - `best_model.keras` — model with best validation accuracy
+ - `final_model.keras` — model at end of training
+ - `vectorizer.keras` — text vectorization layer (vocabulary)
+ - `train_config.json` — training metadata and label mapping
 
 ### Predict:
 
- Provide the model directory (created when running ```train.py```) and new data to ```predict.py```.
- - Command: python3 predict.py ./trained_model_directory/ new_data.file
- - Example: ```python3 predict.py ./trained_model_1479757124/ ./data/small_samples.json```
+ Provide the model directory (created when running `train.py`) and new data to `predict.py`.
+ - Command: `python predict.py <model_directory> <test_data.json>`
+ - Example: `python predict.py ./trained_model_1479757124/ ./data/small_samples.json`
+
+ Predictions are saved to `./data/predictions_output.json`.
 
 ### Reference:
- - [Implement a cnn for text classification in tensorflow](http://www.wildml.com/2015/12/implementing-a-cnn-for-text-classification-in-tensorflow/)
+ - [Implement a CNN for text classification in TensorFlow](http://www.wildml.com/2015/12/implementing-a-cnn-for-text-classification-in-tensorflow/)

@@ -87,3 +87,9 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# Trained models
+trained_model_*/
+
+# Keras model files
+*.keras

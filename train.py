@@ -32,26 +32,33 @@ def train_cnn():
     with open(parameter_file) as f:
         params = json.load(f)
 
-    max_document_length = max(len(x.split(' ')) for x in x_raw)
-    logging.info('The maximum length of all sentences: {}'.format(max_document_length))
+    # Split first so the vectorizer (vocab + sequence length) is fit on train data only.
+    x_, x_test_raw, y_, y_test = train_test_split(x_raw, y_raw, test_size=0.1, random_state=SEED)
+    x_train_raw, x_dev_raw, y_train, y_dev = train_test_split(x_, y_, test_size=0.1, random_state=SEED)
 
+    train_lengths = np.array([len(x.split(' ')) for x in x_train_raw])
+    max_document_length = int(np.percentile(train_lengths, 95))
+    logging.info('Train sentence length: max={}, p95={} (using p95)'.format(int(train_lengths.max()), max_document_length))
+
+    # clean_str already lowercases, so disable the layer's standardizer.
     vectorize_layer = keras.layers.TextVectorization(
         max_tokens=None,
         output_mode="int",
         output_sequence_length=max_document_length,
-        standardize="lower",
+        standardize=None,
         split="whitespace",
     )
-    vectorize_layer.adapt(np.array(x_raw))
+    vectorize_layer.adapt(np.array(x_train_raw))
 
     vocab_size = vectorize_layer.vocabulary_size()
     logging.info('Vocabulary size: {}'.format(vocab_size))
 
-    x = vectorize_layer(np.array(x_raw)).numpy()
-    y = np.array(y_raw)
-
-    x_, x_test, y_, y_test = train_test_split(x, y, test_size=0.1, random_state=SEED)
-    x_train, x_dev, y_train, y_dev = train_test_split(x_, y_, test_size=0.1, random_state=SEED)
+    x_train = vectorize_layer(np.array(x_train_raw)).numpy()
+    x_dev = vectorize_layer(np.array(x_dev_raw)).numpy()
+    x_test = vectorize_layer(np.array(x_test_raw)).numpy()
+    y_train = np.array(y_train)
+    y_dev = np.array(y_dev)
+    y_test = np.array(y_test)
 
     logging.info('x_train: {}, x_dev: {}, x_test: {}'.format(len(x_train), len(x_dev), len(x_test)))
 
@@ -111,15 +118,11 @@ def train_cnn():
         callbacks=callbacks,
     )
 
-    model.save(os.path.join(out_dir, 'final_model.keras'))
-
-    vectorizer_model = keras.Sequential([vectorize_layer])
-    vectorizer_model.save(os.path.join(out_dir, 'vectorizer.keras'))
-
     config = {
         'max_document_length': max_document_length,
         'vocab_size': vocab_size,
         'labels': labels,
+        'vocabulary': vectorize_layer.get_vocabulary(include_special_tokens=False),
     }
     with open(os.path.join(out_dir, 'train_config.json'), 'w') as f:
         json.dump(config, f, indent=4)

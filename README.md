@@ -31,10 +31,9 @@ pip install -r requirements.txt
  
  A directory (`trained_model_<timestamp>/`) will be created during training:
  - `best_model.keras` — model with best validation accuracy
- - `final_model.keras` — model at end of training
- - `vectorizer.keras` — text vectorization layer (vocabulary)
- - `train_config.json` — training metadata and label mapping
+ - `train_config.json` — training metadata, label mapping, and vocabulary
 
+ Each training run creates a new `trained_model_<timestamp>/`.
 ### Predict:
 
  Provide the model directory (created when running `train.py`) and new data to `predict.py`.

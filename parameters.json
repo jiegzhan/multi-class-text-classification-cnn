@@ -1,5 +1,5 @@
 {
-    "num_epochs": 5,
+    "num_epochs": 20,
     "batch_size": 37,
     "num_filters": 32,
     "filter_sizes": "3,4,5",

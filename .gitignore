@@ -93,3 +93,6 @@ trained_model_*/
 
 # Keras model files
 *.keras
+
+# Generated prediction output
+data/predictions_output.json

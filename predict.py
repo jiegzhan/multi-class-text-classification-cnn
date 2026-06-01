@@ -20,12 +20,19 @@ def predict_unseen_data():
     test_file = sys.argv[2]
 
     model = keras.models.load_model(os.path.join(model_dir, 'best_model.keras'))
-    vectorizer_model = keras.models.load_model(os.path.join(model_dir, 'vectorizer.keras'))
-    vectorize_layer = vectorizer_model.layers[0]
 
     with open(os.path.join(model_dir, 'train_config.json')) as f:
         config = json.load(f)
     labels = config['labels']
+
+    vectorize_layer = keras.layers.TextVectorization(
+        max_tokens=None,
+        output_mode="int",
+        output_sequence_length=config['max_document_length'],
+        standardize=None,
+        split="whitespace",
+        vocabulary=config['vocabulary'],
+    )
 
     with open(test_file) as f:
         test_examples = json.load(f)

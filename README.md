@@ -6,7 +6,7 @@
  - The purpose of this project is to **classify Kaggle Consumer Finance Complaints into 11 classes**. 
  - The model was built with **Convolutional Neural Network (CNN)** and **Word Embeddings** on **TensorFlow 2 / Keras**.
 
-### Data: [Kaggle Consumer Finance Complaints](https://www.kaggle.com/cfpb/us-consumer-finance-complaints)
+### Data: [Kaggle Consumer Finance Complaints](https://www.kaggle.com/datasets/selener/consumer-complaint-database)
 
  - Input: **consumer_complaint_narrative**
 
@@ -33,12 +33,11 @@ pip3 install -r requirements.txt
  - `best_model.keras` — model with best validation accuracy
  - `train_config.json` — training metadata, label mapping, and vocabulary
 
- Each training run creates a new `trained_model_<timestamp>/`.
 ### Predict:
 
  Provide the model directory (created when running `train.py`) and new data to `predict.py`.
  - Command: `python3 predict.py <model_directory> <test_data.json>`
- - Example: `python3 predict.py ./trained_model_1479757124/ ./data/small_samples.json`
+ - Example: `python3 predict.py ./trained_model_1780290823/ ./data/small_samples.json`
 
  Predictions are saved to `./data/predictions_output.json`.
 

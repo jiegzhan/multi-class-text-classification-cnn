@@ -87,3 +87,12 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# Trained models
+trained_model_*/
+
+# Keras model files
+*.keras
+
+# Generated prediction output
+data/predictions_output.json

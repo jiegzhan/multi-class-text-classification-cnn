@@ -80,6 +80,7 @@ celerybeat-schedule
 
 # virtualenv
 venv/
+.venv/
 ENV/
 
 # Spyder project settings
@@ -96,3 +97,6 @@ trained_model_*/
 
 # Generated prediction output
 data/predictions_output.json
+
+# macOS
+.DS_Store

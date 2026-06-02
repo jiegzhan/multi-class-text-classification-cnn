@@ -18,7 +18,7 @@ SEED = 42
 
 def train_cnn():
     if len(sys.argv) < 3:
-        print("Usage: python train.py <data_file> <params_file>")
+        print("Usage: python3 train.py <data_file> <params_file>")
         sys.exit(1)
 
     train_file = sys.argv[1]

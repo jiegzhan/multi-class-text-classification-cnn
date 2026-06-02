@@ -13,7 +13,7 @@ logging.getLogger().setLevel(logging.INFO)
 
 def predict_unseen_data():
     if len(sys.argv) < 3:
-        print("Usage: python predict.py <model_directory> <test_data.json>")
+        print("Usage: python3 predict.py <model_directory> <test_data.json>")
         sys.exit(1)
 
     model_dir = sys.argv[1]

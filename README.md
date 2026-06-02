@@ -21,13 +21,13 @@
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
 
 ### Train:
 
- - Command: `python train.py <data_file> <params_file>`
- - Example: `python train.py ./data/consumer_complaints.csv.zip ./parameters.json`
+ - Command: `python3 train.py <data_file> <params_file>`
+ - Example: `python3 train.py ./data/consumer_complaints.csv.zip ./parameters.json`
  
  A directory (`trained_model_<timestamp>/`) will be created during training:
  - `best_model.keras` — model with best validation accuracy
@@ -37,8 +37,8 @@ pip install -r requirements.txt
 ### Predict:
 
  Provide the model directory (created when running `train.py`) and new data to `predict.py`.
- - Command: `python predict.py <model_directory> <test_data.json>`
- - Example: `python predict.py ./trained_model_1479757124/ ./data/small_samples.json`
+ - Command: `python3 predict.py <model_directory> <test_data.json>`
+ - Example: `python3 predict.py ./trained_model_1479757124/ ./data/small_samples.json`
 
  Predictions are saved to `./data/predictions_output.json`.
 
